@@ -1,0 +1,20 @@
+{
+  "layersOrder": [
+    { "name": "body", "path": "body", "number": 26 },
+    { "name": "eye", "path": "eye", "number": 15 },
+    { "name": "hats", "path": "hats", "number": 25 },
+    { "name": "foot", "path": "foot", "number": 7 }
+  ],
+
+  "format": {
+    "width": 230,
+    "height": 230
+  },
+
+  "rarity": [
+    { "key": "", "val": "original" },
+    { "key": "_r", "val": "rare" },
+    { "key": "_sr", "val": "super rare" }
+  ],
+  "defaultEdition": 50
+}

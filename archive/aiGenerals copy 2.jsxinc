@@ -1,0 +1,514 @@
+var showWork = false;
+
+function o(msg) {$.writeln(msg)}
+
+
+function hasItem(layer, name) { return isDefined(layer) && isDefined(layer[name]) }
+
+function isDefined(item) { return item != undefined && item != null }
+
+function layerHasItem(parent, name) {
+  
+  var itemTypes = ["layers", "groupItems", "pathItems", "compoundPathItems"];
+
+  for (var i=0; i<itemTypes.length; i++) {
+    var itemType = itemTypes[i]
+    if (showWork) o('----------checking ' + itemType + ' of ' + parent.name + ' for: ' + name)
+
+    // check if has layers
+    var latestItem = parent
+    if (latestItem[itemType]) {                                 // check current layer has other layers / groupItems etc.
+      if (showWork) o(parent.name + ' has itemTypes of ' + itemType)
+
+      // check if layer has item
+      try {
+        if (latestItem[itemType].getByName(name)) {             // check if we found the next item reference
+          if (showWork) o(parent.name + ' has the item ' + name)
+
+          return latestItem[itemType].getByName(name);          // return the item
+          break;
+        } else {
+          if (showWork) o(parent.name + ' has NOT got the item ' + name)
+        }
+      } catch(e) {
+          if (showWork) o(parent.name + ' has NOT got the item ' + name)
+
+      }
+    } else {
+      if (showWork) o(parent.name + ' has NOT got any: ' + itemType)
+    }
+  }
+  return null
+}
+
+function getAiImage(doc, pathTree, finalItemName) {
+
+  var paths = pathTree.split("|");
+  paths.push(finalItemName)
+
+  if (showWork) o("----------------------------")
+  if (showWork) o("looking for: " + pathTree + '|' + finalItemName)
+
+  var latestItem = doc;
+  for (var p=0; p<paths.length; p++) {
+    var pathName = paths[p]
+
+    var latestItem = layerHasItem(latestItem, pathName)
+    if (latestItem != null) {
+      if (isDefined(latestItem) && latestItem.name==finalItemName) return latestItem
+    } else {
+      if (showWork) o("cannot find item")
+      break;
+    }
+
+  }
+  return null;
+}
+
+
+
+function existsInArray(value, array) {
+  if (array.length == 0) {
+    return false
+  } else {
+    for (var i; i<array.length; i++) {
+      if (array[i] == value) {
+        return true
+        break;
+      }
+    }
+  }
+  return false
+}
+
+function indexInArray(value, array) {
+  if (array.length == 0) {
+    return -1
+  } else {
+    for (var i; i<array.length; i++) {
+      if (array[i] == value) {
+        return i
+        break;
+      }
+    }
+  }
+  return -1
+}
+
+function getRGB(colourArray) {
+  var newRGB = new RGBColor();
+  newRGB.red = colourArray[0];
+  newRGB.green = colourArray[1];
+  newRGB.blue = colourArray[2];
+  return newRGB;
+}
+
+function hideLayerObjects(layerObjectArray) {
+  for (var layNo=0; layNo < layerObjectArray; layNo++) {
+    layerObjectArray[layNo].visible = false;
+  }
+}
+
+function changeColour(itemToColor, newRGB) {
+  itemToColor.color = newRGB;
+  itemToColor.fillColor = newRGB;
+}
+
+
+
+function getRandomRange(range) {
+  var newRandom = getRandom((range[1] - range[0]) + 1)
+  return newRandom = (range[0] + newRandom)
+}
+
+function getRandom(top) {
+  return Math.floor(Math.random() * top);
+}
+
+function exportFileToPNG24(dest) {
+  // if (app.documents.length > 0) {
+
+  var exportOptions = new ExportOptionsPNG24();
+  exportOptions.artBoardClipping = true; //this option makes sure I export
+  //the whole artboard and not just
+  //the rectangle
+  var type = ExportType.PNG24;
+  var fileSpec = new File(dest);
+
+  app.activeDocument.exportFile(fileSpec, type, exportOptions);
+  // }
+}
+
+function unlockAllLayers(parent) {
+  if (parent.layers != null && parent.layers.length > 0) {
+    for (var i=0; i<parent.layers.length; i++) {
+      parent.layers[i].locked = false;
+    }
+  }
+}
+
+function hideAllLayers(parent) {
+  if (parent.layers != null && parent.layers.length > 0) {
+    for (var i=0; i<parent.layers.length; i++) {
+      parent.layers[i].visible = false;
+    }
+  }
+}
+
+
+
+function createInventory() {
+
+  var layers = doc.layers;
+  // var item = fInLayer(layers, "ToColour-Clothes2-Shirt1") 
+  var name
+  name = "T-Shirt"
+  name = "ToColour-Clothes1-Pants1"
+  // name = "Hat2"
+  // //   o("looking for " + name)
+
+  // var itemList = []
+  // itemList = createObjectIndex(itemList, doc)
+  // o(itemList.length)
+  // if (itemList["Hat2"] != undefined) {
+  //   o(itemList["Hat2"].name)
+  // }
+
+  var item = findIn(doc, name) 
+  
+  if (item==null) {
+    o("not found")
+  } else {
+    o("found")
+  }
+}
+
+function hasItemType(parent, itemType) {
+  return parent != undefined && parent[itemType] != undefined && parent[itemType].length > 0
+}
+
+// function loopItems(itemList, parent, itemType) { 
+//   var items = parent[itemType]
+//   for (var i=0; i<items.length; i++) {
+//     var item = items[i]
+//     if (item["name"] !== undefined) {
+//       itemList.push({name: item.name})
+//     }
+//     createObjectIndex(itemList, item)
+//   }
+//   return itemList
+// }
+
+function createObjectIndex(itemList, parent) {
+  var itemTypes = ["layers", "groupItems", "pathItems", "compoundPathItems"]
+  for (var itemTypeNo=0; itemTypeNo<itemTypes.length; itemTypeNo++) {
+    
+    var itemType = itemTypes[itemTypeNo];
+    if (hasItemType(parent, itemType)) {
+      
+      // itemList = loopItems(itemList, parent, itemType)
+        var items = parent[itemType]
+        for (var i=0; i<items.length; i++) {
+        
+          var item = items[i]
+          if (item["name"] !== undefined)  {
+            if (existsInArray({name: itemList.name}, itemList) != -1) {
+              itemList.push({name: itemList.name})
+            }
+          }
+          itemList = createObjectIndex(itemList, item)
+
+        }
+    }
+  }
+  return itemList;
+}
+
+// function hasItemType(parent, itemType) {
+//   return parent[itemType] != undefined && parent[itemType].length > 0
+// }
+
+function findInType(parent, itemType, name) { 
+  var items = parent[itemType]
+  for (var i=0; i<parent[itemType].length; i++) {
+    var item = items[i]
+    if (item.name == name) {
+      return item;
+      break;
+    } else {
+      var checkSubItem = findIn(item, name)
+      if (checkSubItem != null) {
+        return checkSubItem
+        break;
+      }
+    }
+  }
+  return null
+}
+
+function findIn(parent, name) {
+  var uuid = "";
+  var itemTypes = ["layers", "groupItems", "pathItems", "compoundPathItems"]
+  for (var itemTypeNo=0; itemTypeNo<itemTypes.length; itemTypeNo++) {
+    
+    var itemType = itemTypes[itemTypeNo];
+    if (hasItemType(parent, itemType)) {
+    
+      var found = findInType(parent, itemType, name)
+      if (found != null) {
+        return found
+        break;
+      }
+    }
+  }
+}
+
+// function fInLayer(layers, name) {
+
+//   if (layers.length > 0) { 
+//     for (var i=0; i<layers.length; i++) {
+//       if (layers[i].name==name) {
+//         return layers[i]
+//       } else {
+//         if (layers[i]['layers'] !== undefined && layers[i]['layers'].length > 0) {
+//           return fInLayer(layers[i]['layers'], name)
+//         } else {
+//           return null
+//         }
+//       }
+//     }
+//   } else {
+//     return null
+//   }
+
+// }
+
+
+// function createInventory2() {
+//   var layers = doc.layers;
+
+//   // var name = "Clothes 1"
+//   var name = "ToColour-Clothes1-Shirt1"
+//   // var item = getItem(doc, name)
+//   var item = getLayerByProperty("name", name)
+//   if (item == null) {
+//     $.writeln("notFound: " + name)
+//   } else {
+//     $.writeln("foundItem:" )
+//     $.writeln(item)
+//   }
+//   // $.writeln(layers.length)
+//   // layers = doc["layers"];
+//   // $.writeln(layers.length)
+//   // for (var i = 0; i < layers.length; i++) {
+//   //   var layer = layers[i]
+//   //   // o(layer.pathItems.length)
+//   //   // o(layer.layers.length)
+//   //   // o(layer.compoundPathItems.length)
+//   //   // o(layer.name)
+//   //   // if (layers[i].name == name) {
+//   //   //   return layers[i];
+//   //   // }
+//   // }
+//   // return null;
+// }
+
+
+// function getLayerByProperty(property, value) {
+//   Array.prototype.find = function(callback) {
+//     for (var i = 0; i < this.length; i++)
+//       if (callback(this[i], i, this)) return this[i];
+//     return null;
+//   };
+//   function get(type, parent) {
+//     if (arguments.length == 1 || !parent) parent = app.activeDocument;
+//     var result = [];
+//     if (!parent[type]) return [];
+//     for (var i = 0; i < parent[type].length; i++) {
+//       result.push(parent[type][i]);
+//       if (parent[type][i][type])
+//         result = [].concat(result, get(type, parent[type][i]));
+//     }
+//     return result || [];
+//   }
+//   return get("layers").find(function(layer) {
+//     return layer[property] == value;
+//   });
+// }
+
+// function getItem(doc, name) {
+
+//   var itemTypes = ["layers", "groupItems", "pathItems", "compoundPathItems"]
+//   for (var i=0; i<itemTypes.length; i++) {
+//     var item = doc.layers.getByName(name)
+//     if (item != null) {
+//       return [item, itemTypes[i]]
+//     }
+//   }
+//   return null;
+// }
+
+// function findItem2(parent, name) {
+//   var item
+//   var itemTypes = ["layers", "pathItems", "compoundPathItems"]
+
+//   for (var itemNo=0; itemNo < itemTypes.length; itemNo++) {
+    
+//     var itemType = itemTypes[itemNo]      // run through layer, pathItems or cPathItems
+//     if (parent[itemType].length > 0) {   // if they exist, loop through them
+    
+//       var items = parent[itemType]  
+//       for (i=0; i<items.length; i++) {   // loop through the item type
+
+//         var item = items[i]
+//         if (item.name==name) {
+//           return [item, itemType]
+//         } else {
+//           item = findInItem(item, itemType, name);  // see if you can find the item
+//           if (item != null) return item;
+//         }
+
+//       }
+//     }
+//   }
+//   return null;
+
+
+  // if (parent.pathItems.length > 0) {
+  //   item = findInPathItems(parent, name);
+  //   if (item != null) return item;
+  // }
+
+  // if (parent.compoundPathItems.length > 0) {
+  //   item = findInCompoundPathItems(parent, name);
+  //   if (item != null) return item;
+  // }
+
+// }
+
+// function findInItem(parent, itemType, name) {
+//   var items = parent[itemType];
+
+//   for (var i = 0; i < items.length; i++) {
+//     var item = itemType[i]
+//     if (item.name == name) {
+//       return [item, itemType];
+//     } else {
+//       var foundItem = findItem(item, name)
+//       if (foundItem != null) return foundItem
+//     }
+//   }
+
+//   return null;
+// }
+
+// function findInLayers(parent, name) {
+//   var layers = parent.layers;
+
+//   for (var i = 0; i < layers.length; i++) {
+//     var layer = layers[i]
+//     if (layer.name == name) {
+//       return [layer, "layer"];
+//     } else {
+//       var foundItem = findItem(layer, name)
+//       if (foundItem != null) return foundItem
+//     }
+//   }
+
+//   return null;
+// }
+
+// function findInPathItems(parent, name) {
+//   var pathItems = parent.pathItems;
+//   for (var i = 0; i < pathItems.length; i++) {
+//     var pathItem = pathItems[i]
+//     if (pathItem.name == name) {
+//       return [pathItem, "pathItem"];
+//     } else  {
+//       var foundItem = findItem(pathItem, name)
+//       if (foundItem != null) return foundItem
+//     }
+//   }
+//   return null;
+// }
+
+// function findInCompoundPathItems(parent, name) {
+//   var compoundPathItems = parent.compoundPathItems;
+//   for (var i = 0; i < compoundPathItems.length; i++) {
+//     var compoundPathItem = compoundPathItems[i]
+//     if (compoundPathItem.name == name) {
+//       return [compoundPathItem, "compoundPathItem"];
+//     } else {
+//       var foundItem = findItem(compoundPathItem, name)
+//       if (foundItem != null) return foundItem
+//     }
+//   }
+//   return null;
+// }
+
+// function findItem(parent, name) {
+//   var item
+
+//   if (parent.typename != "PathItem" && parent.typename != "CompoundPathItem") {
+//     if (parent.layers.length > 0) {
+//       item = findInLayers(parent, name);
+//       if (item != null) return item;
+//     }
+
+//     if (parent.pathItems.length > 0) {
+//       item = findInPathItems(parent, name);
+//       if (item != null) return item;
+//     }
+
+//     if (parent.compoundPathItems.length > 0) {
+//       item = findInCompoundPathItems(parent, name);
+//       if (item != null) return item;
+//     }
+//   }
+
+//   return null;
+// }
+
+// function findInLayers(parent, name) {
+//   var layers = parent.layers;
+
+//   for (var i = 0; i < layers.length; i++) {
+//     var layer = layers[i]
+//     if (layer.name == name) {
+//       return [layer, "layer"];
+//     } else {
+//       var foundItem = findItem(layer, name)
+//       if (foundItem != null) return foundItem
+//     }
+//   }
+
+//   return null;
+// }
+
+// function findInPathItems(parent, name) {
+//   var pathItems = parent.pathItems;
+//   for (var i = 0; i < pathItems.length; i++) {
+//     var pathItem = pathItems[i]
+//     if (pathItem.name == name) {
+//       return [pathItem, "pathItem"];
+//     } else  {
+//       var foundItem = findItem(pathItem, name)
+//       if (foundItem != null) return foundItem
+//     }
+//   }
+//   return null;
+// }
+
+// function findInCompoundPathItems(parent, name) {
+//   var compoundPathItems = parent.compoundPathItems;
+//   for (var i = 0; i < compoundPathItems.length; i++) {
+//     var compoundPathItem = compoundPathItems[i]
+//     if (compoundPathItem.name == name) {
+//       return [compoundPathItem, "compoundPathItem"];
+//     } else {
+//       var foundItem = findItem(compoundPathItem, name)
+//       if (foundItem != null) return foundItem
+//     }
+//   }
+//   return null;
+// }

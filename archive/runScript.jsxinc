@@ -1,0 +1,6 @@
+
+
+function testThis() {
+    $.writeln("test")
+    return "hellow"
+}

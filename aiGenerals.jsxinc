@@ -1,0 +1,574 @@
+var showWork = false;
+
+function o(msg) {$.writeln(msg)}
+
+function adhoc() {
+  // var list = "Base|Body|Stripes"
+  var list = "Hand"
+  var layers = list.split("|")
+
+  var item = doc
+  for (var i=0; i<layers.length; i++) {
+    item = item.layers[layers[i]]
+  }
+  // hasWhat(item)
+  for (var i=0; i<item.layers.length; i++) {
+
+    o("----------------------------")
+    // rename name
+    var name = item.layers[i].name
+    item.layers[i].name = name.replace(" ", "")
+
+    // move layer
+    // path.move(item, ElementPlacement.PLACEATEND)
+    // path.name = newName + (i+1)  
+  }
+
+
+  // var newName = "ToColour-Stripes"
+  // for (var i=0; i<item.groupItems.length; i++) {
+
+  //   o("----------------------------")
+  //   var path = item.groupItems[i].groupItems[0].pathItems[0]
+  //   // path.move(item, ElementPlacement.PLACEATEND)
+  //   // path.name = newName + (i+1)  
+  // }
+}
+
+function createOneFolder(path) {
+  try {
+    var folder = new Folder(path)
+    if (!folder.exists) {
+      var result = folder.create()
+      if (result)  {
+        o("folder created: " + folder)
+      } else {
+        o("folder doesn't exist: " + folder)
+      }
+    }
+  } catch(e) {
+    o(e)
+  }
+}
+
+
+function createFolder(path) {
+  try {
+    paths = path.split("/")
+    var newPath = '/'
+    for (var i=0; i<paths.length; i++) {
+      if (paths[i] != '') {
+        
+        newPath = newPath + paths[i] + "/"
+        var folder = new Folder(newPath)
+
+        if (folder.exists)  {
+          o("folder exists: " + folder)
+        } else {
+          o("folder doesn't exist: " + folder)
+          var created = folder.create()
+          if (!created) return "Error: Unable to create: " + folder
+        }
+      }
+    }
+  } catch(e) {
+    o(e)
+  }
+  return true
+}
+
+
+function removeFolder(path, recursive) {
+  var folder = Folder(path);
+  var files = folder.getFiles()
+
+  if (files.length > 0) {
+    for (var i=0; i<files.length; i++) {
+      var file = File(files[i]);
+      if (file instanceof File) {
+        file.remove()
+      } else {
+        if (recursive) {
+          o("found folder: " + files[i])
+          removeFolder(files[i], true)
+        } else {
+          o("Folder not empty, specify (path, true) to remove files & folders recusively")
+          return
+        }
+      }
+    }
+  }
+  folder.remove()
+}
+
+
+
+function hasItem(layer, name) { return isDefined(layer) && isDefined(layer[name]) }
+
+function isDefined(item) { return item != undefined && item != null }
+
+function hasItemType(parent, itemType) {
+  return parent != undefined && parent[itemType] != undefined && parent[itemType].length > 0
+}
+
+function hasWhat(item) {
+  var itemTypes = ["layers",  "pathItems", "compoundPathItems", "groupItems"];
+  for (var iType=0; iType < itemTypes.length; iType++) {
+    var itemType = itemTypes[iType];
+    if (isDefined(item) && isDefined(item[itemType]) && item[itemType].length > 0) o("has " + itemType)
+  }
+}
+
+function layerHasItem(parent, name) {
+  
+  var itemTypes = ["layers", "groupItems", "pathItems", "compoundPathItems"];
+
+  for (var i=0; i<itemTypes.length; i++) {
+    var itemType = itemTypes[i]
+    if (showWork) o('----------checking ' + itemType + ' of ' + parent.name + ' for: ' + name)
+
+    // check if has layers
+    var latestItem = parent
+    if (latestItem[itemType]) {                                 // check current layer has other layers / groupItems etc.
+      if (showWork) o(parent.name + ' has itemTypes of ' + itemType)
+
+      // check if layer has item
+      try {
+        var nextItem = latestItem[itemType].getByName(name)
+        if (nextItem) {             // check if we found the next item reference
+          nextItem.visible=true
+          if (showWork) o(parent.name + ' has the item ' + name)
+
+          return nextItem;          // return the item
+          break;
+        } else {
+          if (showWork) o(parent.name + ' has NOT got the item ' + name)
+        }
+      } catch(e) {
+          if (showWork) o(parent.name + ' has NOT got the item ' + name)
+
+      }
+    } else {
+      if (showWork) o(parent.name + ' has NOT got any: ' + itemType)
+    }
+  }
+  return null
+}
+
+function getAiImage(doc, pathTree, finalItemName) {
+  showWork = false;
+  
+  var paths = ""
+  if (!isDefined(pathTree) || !isDefined(pathTree[0]) || pathTree.length == 0) {
+    paths = Array(finalItemName)
+  } else {
+    var arrTemp = pathTree.join("|")
+    paths = arrTemp.split("|");
+    paths.push(finalItemName)
+  }
+
+  if (showWork) o("----------------------------")
+  if (showWork) o("looking for: " + pathTree + '|' + finalItemName)
+
+  var latestItem = doc;
+  for (var p=0; p<paths.length; p++) {
+    
+    var pathName = paths[p]
+    var latestItem = layerHasItem(latestItem, pathName)
+
+    if (latestItem != null) {
+      latestItem.visible = true
+      if (isDefined(latestItem) && latestItem.name==finalItemName) return latestItem
+
+    } else {
+
+      if (showWork) o("cannot find item")
+      // if (showWork) o("cannot find item")
+      break;
+
+    }
+
+  }
+  return null;
+}
+
+// function getAiImage(doc, pathTree, finalItemName) {
+
+//   var paths
+//   if (!isDefined(pathTree) || pathTree.length == 0) {
+//     paths = Array(finalItemName)
+//   } else {
+//     var paths = pathTree.split("|");
+//     paths.push(finalItemName)
+//   }
+  
+
+//   if (showWork) o("----------------------------")
+//   if (showWork) o("looking for: " + pathTree + '|' + finalItemName)
+
+//   var latestItem = doc;
+//   for (var p=0; p<paths.length; p++) {
+    
+//     var pathName = paths[p]
+//     var latestItem = layerHasItem(latestItem, pathName)
+//     if (latestItem != null) {
+//       latestItem.visible = true
+//       if (isDefined(latestItem) && latestItem.name==finalItemName) return latestItem
+//     } else {
+//       if (showWork) o("cannot find item")
+//       break;
+//     }
+
+//   }
+//   return null;
+// }
+
+
+
+function existsInArray(value, array) {
+  if (array.length == 0) {
+    return false
+  } else {
+    for (var i; i<array.length; i++) {
+      if (array[i] == value) {
+        return true
+        break;
+      }
+    }
+  }
+  return false
+}
+
+function indexInArray(value, array) {
+  if (array.length == 0) {
+    return -1
+  } else {
+    for (var i; i<array.length; i++) {
+      if (array[i] == value) {
+        return i
+        break;
+      }
+    }
+  }
+  return -1
+}
+
+function getRGB(colourArray) {
+  var newRGB = new RGBColor();
+  newRGB.red = colourArray[0];
+  newRGB.green = colourArray[1];
+  newRGB.blue = colourArray[2];
+  return newRGB;
+}
+
+function getGradient(colourArray, bColourLeft, gradientName) {
+
+
+  // Create a new gradient
+  // A new gradient always has 2 stops
+
+  var gradients = app.activeDocument.gradients
+  // var gradientName = "White, Black"
+  // var gradientName = "Gradient Swatch 2"
+  // var gradientName = "New Gradient Swatch 8"
+  // var gradientName = "new test gradient"
+  var gradientExists = false
+  for (var i=0; i < gradients.length; i++) {
+    if (gradients[i].name == gradientName) {
+      gradientExists = true
+      break
+    }
+  }
+
+  if (gradientExists) {
+    // var newGradient = app.activeDocument.gradients[gradientName].delete()
+    // var newGradient = app.activeDocument.gradients.add();
+    // newGradient.name = gradientName;
+    var newGradient = app.activeDocument.gradients[gradientName];
+  } else {
+    var newGradient = app.activeDocument.gradients.add();
+    newGradient.name = gradientName;
+  }
+    // var newGradient = app.activeDocument.gradients.add();
+    // newGradient.name = gradientName;
+    
+  // loops throught the four gradient colors and creates the shades based on the base colr
+  //    by adding the delta color value to create shades of same colour
+  // var cols = [baseColorArray, [addR1, addG1, addB1], [addR2, addG2, addB2], [addR3, addG3, addB3]]
+  var cols = [colourArray, [36, 38, 34], [73, 105, 101], [63, 67, 66]];
+  var colNames = ["red", "green", "blue"];
+  for (var i=0; i < cols.length; i++) {                        // run through all the color shade changes
+    var color = new RGBColor();                           
+    for (var c=0; c < 3; c++) {                                // run through red, green, blue
+      var newCol = cols[0][c];                                 // get the base color code
+      if (i > 0) newCol = newCol + cols[i][c];                 // add the incremental color value only if not base color layer
+      if (newCol > 255) newCol = 255;                          // adjust if over 255
+      color[colNames[c]] = newCol;       // add incremental color value
+    }
+    newGradient.gradientStops[i].color = color;
+  }
+
+
+  // construct an Illustrator.GradientColor object referring to the newly created gradient
+  var colorOfGradient = new GradientColor();
+  colorOfGradient.gradient = newGradient;
+  
+  return colorOfGradient
+
+}
+
+// function getGradient(colourArray, bColourLeft) {
+
+//  // Create a color for both ends of the gradient 
+//   var startColor = new RGBColor();
+//   startColor.red = 255;
+//   startColor.green = 255;
+//   startColor.blue = 255;
+
+
+//   var endColor = new RGBColor();
+//   endColor.red = colourArray[0];
+//   endColor.green = colourArray[1];
+//   endColor.blue = colourArray[2];
+
+//   // var diffsAddToLast = [[36, 38, 34], [37, 67, 67], [-10, -38, -35]]
+//   // var diffsFromBast = [[36, 38, 34], [73, 105, 101], [63, 67, 66]]
+
+
+
+
+//   // Create a new gradient
+//   // A new gradient always has 2 stops
+
+//   var gradients = app.activeDocument.gradients
+//   var gradientExists = false
+//   // var gradientName = "White, Black"
+//   var gradientName = "Gradient Swatch 2"
+//   // var gradientName = "New Gradient Swatch 8"
+//   for (var i=0; i < gradients.length; i++) {
+//     if (gradients[i].name == gradientName) {
+//       gradientExists = true
+//       break
+//     }
+//   }
+
+//   if (gradientExists) {
+//     var newGradient = app.activeDocument.gradients[gradientName]
+//   } else {
+//     var newGradient = app.activeDocument.gradients.add();
+//     newGradient.name = gradientName;
+//   }
+//     // newGradient.type = GradientType.RADIAL;
+//     newGradient.type = GradientType.LINEAR;
+//     newGradient.gradientStops[0].rampPoint = 0;    // Modify the first gradient stop
+//     newGradient.gradientStops[0].midPoint = 40;   // newGradient.gradientStops[0].midPoint = 60;
+//     newGradient.gradientStops[1].rampPoint = 85;  // Modify the last gradient stop
+  
+//   if (bColourLeft) {
+//     newGradient.gradientStops[0].color = endColor;
+//     newGradient.gradientStops[1].color = startColor;
+//   } else {
+//     newGradient.gradientStops[0].color = startColor;
+//     newGradient.gradientStops[1].color = endColor;
+//   }
+
+//   // construct an Illustrator.GradientColor object referring to the newly created gradient
+//   var colorOfGradient = new GradientColor();
+//   colorOfGradient.gradient = newGradient;
+  
+//   return colorOfGradient
+
+// }
+
+// function getGradient(colourArray) {
+//   // var newGradient = new RB
+//   // var newRGB = new RGBColor();
+//   // newRGB.red = colourArray[0];
+//   // newRGB.green = colourArray[1];
+//   // newRGB.blue = colourArray[2];
+//   // return newRGB;
+
+//  // Create a color for both ends of the gradient
+ 
+//   var startColor = new RGBColor();
+//   startColor.red = 255;
+//   startColor.green = 255;
+//   startColor.blue = 255;
+
+//   var endColor = new RGBColor();
+//   endColor.red = colourArray[0];
+//   endColor.green = colourArray[1];
+//   endColor.blue = colourArray[2];
+
+//   // Create a new gradient
+//   // A new gradient always has 2 stops
+
+//   var gradients = app.activeDocument.gradients
+//   var gradientExists = false
+//   // var gradientName = "White, Black"
+//   var gradientName = "Gradient Swatch 2"
+//   for (var i=0; i < gradients.length; i++) {
+//     if (gradients[i].name == gradientName) {
+//       gradientExists = true
+//       break
+//     }
+//   }
+
+//   if (gradientExists) {
+//     var newGradient = app.activeDocument.gradients[gradientName]
+//   } else {
+//     var newGradient = app.activeDocument.gradients.add();
+//     newGradient.name = gradientName;
+//   }
+//     // newGradient.type = GradientType.RADIAL;
+//     newGradient.type = GradientType.LINEAR;
+//     newGradient.gradientStops[0].rampPoint = 0;    // Modify the first gradient stop
+//     newGradient.gradientStops[0].midPoint = 40;   // newGradient.gradientStops[0].midPoint = 60;
+//     newGradient.gradientStops[1].rampPoint = 85;  // Modify the last gradient stop
+
+//     var color1 = new RGBColor();
+//     color1.red = 0;
+//     color1.green = 220;
+//     color1.blue = 6;
+    
+//     var color2 = new RGBColor();
+//     color2.red = 255;
+//     color2.green = 242;
+//     color2.blue = 0;
+    
+    
+//     // gradient combos
+//    var combos = [
+//      [[0,1,170], [180,242,255]], 
+//      [[255,21,53], [255,243,105]],
+//      [[86,10,204], [173,255,255]],
+//      [[255,165,10], [255,255,208]],
+//      [[0,16,184], [255,255,255]],
+//      ]
+
+//   newGradient.gradientStops[0].color = color1;
+//   newGradient.gradientStops[1].color = color2;
+//   // newGradient.gradientStops[0].color = getRandomColour();
+//   // newGradient.gradientStops[1].color = endColor;
+  
+    
+    
+//     // var color3 = new RGBColor();
+//     // color3.red = 150;
+//     // color3.green = 200;
+//     // color3.blue = 10;
+
+//     // var color4 = new RGBColor();
+//     // color4.red = 55;
+//     // color4.green = 155;
+//     // color4.blue = 255;
+
+//     // var color5 = new RGBColor();
+//     // color5.red = 12;
+//     // color5.green = 112;
+//     // color5.blue = 212;
+
+//   // newGradient.gradientStops[2].color = getRandomColour();
+//   // newGradient.gradientStops[3].color = getRandomColour();
+//   // newGradient.gradientStops[4].color = getRandomColour();
+
+
+//   // construct an Illustrator.GradientColor object referring to the newly created gradient
+//   var colorOfGradient = new GradientColor();
+//   colorOfGradient.gradient = newGradient;
+  
+//   return colorOfGradient
+
+//   // // get first path item, apply new gradient as its fill
+//   // var topPath = app.activeDocument.pathItems[0];
+//   // topPath.filled = true;
+//   // topPath.fillColor = colorOfGradient;
+
+// }
+
+function getRandomColour() {
+    var endColor = new RGBColor();
+    endColor.red = getRandom(255);
+    endColor.green = getRandom(255);
+    endColor.blue = getRandom(255);
+    return endColor
+}
+
+
+function hideLayerObjects(layerObjectArray) {
+  for (var layNo=0; layNo < layerObjectArray.length; layNo++) {
+    layerObjectArray[layNo].visible = false;
+  }
+}
+
+function changeColour(itemToColor, newRGB) {
+
+  if (itemToColor.typename == 'CompoundPathItem') {
+    if (itemToColor.pathItems.length > 0 ) {
+      for (var i=0; i <itemToColor.pathItems.length; i++) {
+        itemToColor.pathItems[i].fillColor = newRGB;
+      }
+    }
+  } else {
+    itemToColor.color = newRGB;
+    // o(itemToColor.editable)
+    itemToColor.fillColor = newRGB;
+  }
+}
+
+function changeGradient(itemToColor, newRGB) {
+
+  if (itemToColor.typename == 'CompoundPathItem') {
+    if (itemToColor.pathItems.length > 0 ) {
+      for (var i=0; i <itemToColor.pathItems.length; i++) {
+        itemToColor.pathItems[i].fillColor = newRGB;
+      }
+    }
+  } else {
+    itemToColor.color = newRGB;
+    itemToColor.fillColor = newRGB;
+  }
+}
+
+
+
+function getRandomRange(range) {
+  var newRandom = getRandom((range[1] - range[0]) + 1)
+  return newRandom = (range[0] + newRandom)
+}
+
+function getRandom(top) {
+  return Math.floor(Math.random() * top);
+}
+
+function exportFileToPNG24(dest) {
+  // if (app.documents.length > 0) {
+
+  var exportOptions = new ExportOptionsPNG24();
+  exportOptions.artBoardClipping = true; //this option makes sure I export
+  //the whole artboard and not just
+  //the rectangle
+  var type = ExportType.PNG24;
+  var fileSpec = new File(dest);
+
+  app.activeDocument.exportFile(fileSpec, type, exportOptions);
+  // }
+}
+
+function unlockAllLayers(parent) {
+  if (parent.layers != null && parent.layers.length > 0) {
+    for (var i=0; i<parent.layers.length; i++) {
+      parent.layers[i].locked = false;
+    }
+  }
+}
+
+function hideAllLayers(parent) {
+  if (isDefined(parent) && isDefined(parent.layers) && parent.layers.length > 0) {
+    for (var i=0; i<parent.layers.length; i++) {
+      parent.layers[i].visible = false;
+    }
+  }
+}
+
+

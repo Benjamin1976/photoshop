@@ -1,0 +1,126 @@
+
+var redOrig = [255, 51, 51]
+var yellowOrig = [255, 210, 21]
+var goldOrig = [255, 204, 0]
+var white = [255,255,255]
+
+var furOrig = [255, 153, 51]
+var cnyPink = [255, 153, 153]
+var cnyGold = [204, 153, 51]
+
+var anotherPink = [255, 204, 204]
+
+var hatMustard = [255, 204, 51]
+var hatGreen = [51, 204, 102]
+var hatRed = [204, 51, 51]
+
+// var hatPupil = [51, 51, 0]
+var hatPupil = [68, 35, 21]
+var hatIris = [204, 102, 51]
+
+// var tigerEye = [51, 51, 0]
+var tigerEye = [68, 35, 21]
+
+var newOrange = [255, 44, 0]
+var newBrown = [153, 102, 0]
+var newBlue = [63, 118, 255]
+var newPink = [255, 21, 112]
+var newCyan = [42, 100, 135]
+var newGreen = [11, 148, 70]
+var newYellow = [255, 254, 33]
+var newGold = [204, 153, 2]
+var newWhite = [255, 255, 255]
+
+var newColors = [newOrange, newBlue, newBrown, newPink, newCyan, newGreen, newYellow, newGold, newWhite]
+var colRangeEnd = newColors.length-1
+
+var imageVariations = [
+  {
+    type: "clothing", change: true, name: "Clothes 1", filename: "clothes1-", outputPath: "clothes", count:30, attributesToChange: [
+      {name: "Clothes1-Pants", change: true, typeName: "colour", path: ["Clothes1","Pants","Colour"], controls: [1,3], range: [0, colRangeEnd],  orig: redOrig, colours: newColors},
+      {name: "Clothes1-Shirt", change: true, typeName: "colour", path: ["Clothes1","T-Shirt","Colour"], controls: [1,5], range: [0,colRangeEnd], orig: white, colours: newColors},
+      {name: "T-Shirt-Logo", change: true, typeName: "images", path: ["Clothes1","T-Shirt-Logos"], range: [1,15]}
+    ] 
+  },
+  {
+    type: "clothing", change: true, name: "Clothes 2", filename: "clothes2-", outputPath: "clothes", count:30, attributesToChange: [
+      {name: "Clothes2-Pants", change: true, typeName: "colour", path: ["Clothes2","Pants","Colour"], controls: [1,3], range: [0,colRangeEnd], orig: redOrig, colours: newColors},
+      {name: "Clothes2-Shirt", change: true, typeName: "colour", path: ["Clothes2","Shirt","Colour"], controls: [1,3], range: [0,colRangeEnd], orig: redOrig, colours: newColors},
+      {name: "Clothes2-Shirt-Trim", change: true, typeName: "colour", path: ["Clothes2","Shirt","Colour"], controls: [1,6], range: [0,0],  orig: goldOrig, colours: [goldOrig]},
+      {name: "Clothes2-Shirt-Fast", change: true, typeName: "colour", path: ["Clothes2","Buttons"], controls: [1,9], range: [0,0],  orig: goldOrig, colours: [goldOrig]},      
+    ] 
+  },
+  {
+    type: "hat", name: "Hat 2", change: false, filename: "hat1-", outputPath: "hats", count:5, attributesToChange: [
+      {name: "EmpHatMain", change: true, typeName: "colour", path: ["Hat2","Colour"], controls: [1,3], range: [0,1], orig: redOrig, colours: [redOrig, white]},
+      {name: "EmpHatTrim", change: true, typeName: "colour", path: ["Hat2","Colour"], controls: [1,3], range: [0,1], orig: yellowOrig, colours: [yellowOrig, cnyGold]},
+      {name: "EmpHatEdge", change: true, typeName: "colour", path: ["Hat2","Colour"], controls: [1,1], range: [0,1], orig: white, colours: [white, cnyGold, [131, 137, 161]]},
+    ] 
+  },
+  {
+    type: "hat", name: "Hat 1", change: false, filename: "hat2-", outputPath: "hats", count:15, attributesToChange: [
+      {name: "Base", change: true, typeName: "colour", path: ["Hat1","Colour"], controls: [1,13], range: [0,1], orig: hatMustard, colours: [hatMustard, [41, 171, 226]]},
+      {name: "ThirdColour", change: true, typeName: "colour", path: ["Hat1","Colour"], controls: [1,9], range: [0,1], orig: hatRed, colours: [hatRed, [241, 90, 36]]},
+      {name: "FourthColour", change: true, typeName: "colour", path: ["Hat1","Colour"], controls: [1,2], range: [0,1], orig: hatGreen, colours: [hatGreen, [252, 36, 242]]},
+      {name: "EyePupil", change: true, typeName: "colour", path: ["Hat1","Colour"], controls: [1,2], range: [0,1], orig: hatPupil, colours: [hatPupil, [0, 0, 0]]},
+      {name: "EyeIris", change: true, typeName: "colour", path: ["Hat1","Colour"], controls: [1,4], range: [0,2], orig: hatIris, colours: [hatIris, [51, 102, 204], [0, 153, 51]]},
+    ] 
+  },
+  {
+    type: "body", name: "Body", change: false,  filename: "body1-", outputPath: "body", count:15, attributesToChange: [
+      {name: "Fur", change: true, typeName: "colour", path: ["Base","Body","Fur"], controls: [1,14], range: [0,1], orig: furOrig, colours: [furOrig, [255, 204, 153]]},
+      {name: "WhiteFur", change: true, typeName: "colour", path: ["Base","Body","WhiteFur"], controls: [1,7], range: [0,0], orig: white, colours: [white]},
+      {name: "Stripes", change: true, typeName: "colour", path: ["Base","Body","Stripes"], controls: [1,28], range: [0,1], orig: hatPupil, colours: [hatPupil, redOrig]},
+      {name: "Teeth", change: false, typeName: "colour", path: ["Base","Teeth"], controls: [1,2], range: [0,0], orig: white, colours: [white]},
+      {name: "Pupil", change: true, typeName: "colour", path: ["Base","Eyes"], controls: [1,2], range: [0,0], orig: [51, 0, 0], colours: [[51, 0, 0]]},
+      {name: "Iris", change: true, typeName: "colour", path: ["Base","Eyes"], controls: [1,2], range: [0,2], orig: tigerEye, colours: [tigerEye, [51, 102, 204], [0, 153, 51]]},
+      {name: "EyeBrow", change: false, typeName: "colour", path: ["Base","Eyebrows"], controls: [1,2], range: [0,0], orig: hatPupil, colours: [hatPupil]},
+      {name: "Nose", change: false, typeName: "colour", path: ["Base","Nose"], controls: [1,1], range: [0,0], orig: hatPupil, colours: [hatPupil]},
+      {name: "Mouth", change: false, typeName: "colour", path: ["Base","Mouth"], controls: [1,2], range: [0,0], orig: [255, 44, 44], colours: [[255, 44, 44]]},
+    ] 
+  },
+]
+
+
+var nonVariedItems = [
+  {
+    type: "accessories", name: "Chopsticks", change: false,  filename: "chopsticks-", outputPath: "chopstick1", count:1, attributesToChange: [
+      {name: "Chopsticks", change: true, typeName: "export", path:[], controls: [1,1]}
+    ]
+  },
+  {
+    type: "accessories", name: "Chopsticks", change: false,  filename: "chopsticks-", outputPath: "chopstick2", count:1, attributesToChange: [
+      {name: "Chopsticks", change: true, typeName: "export", path:[], controls: [2,2]}
+    ]
+  },
+  {
+    type: "accessories", name: "Food", change: false,  filename: "food-", outputPath: "food", count:1, attributesToChange: [
+      {name: "Food", change: true, typeName: "export", path:["Food"], controls: [1,12]}
+    ]
+  },
+  {
+    type: "accessories", name: "Chopstick Food", change: false,  filename: "chopstickFood-", outputPath: "food", count:1, attributesToChange: [
+      {name: "Chopstick", change: true, typeName: "export", path:["ChopstickFood"], controls: [1,21]},
+    ]
+  },
+  {
+    type: "accessories", name: "Hand", change: false,  filename: "hand-", outputPath: "hand", count:1, attributesToChange: [      
+      {name: "Hand", change: true, typeName: "export", path:["Hand"], controls: [1,15]},
+    ] 
+  },
+  // {
+  //   type: "background", name: "Hand", change: true,  filename: "hand-", outputPath: "hand", count:1, attributesToChange: [      
+  //     {name: "Hand", change: true, typeName: "export", path:["Hand"], controls: [1,15]},
+  //   ] 
+  // },
+  {
+    type: "background", name: "BackgroundNew", change: false,  filename: "background-", outputPath: "background", count:1, attributesToChange: [      
+      {name: "BackgroundNew", change: true, typeName: "export", path:["BackgroundsNew"], controls: [1,11]},
+    ] 
+  },
+  {
+    type: "background", name: "Shading", change: false,  filename: "shading-", outputPath: "shading", count:1, attributesToChange: [      
+      {name: "Shading", change: true, typeName: "export", path:["Shading"], controls: [1,5]},
+    ] 
+  },
+]
